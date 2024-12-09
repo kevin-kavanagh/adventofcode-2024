@@ -95,7 +95,6 @@ public class Dec4(ITestOutputHelper output)
         return 0;
     }
 
-
     private static List<char[]> GetData()
     {
         var lines = File.ReadLines("./input/Dec4.txt");

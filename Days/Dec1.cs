@@ -1,7 +1,6 @@
 using Xunit.Abstractions;
 
 namespace AdventOfCode_2024.Days;
-
 public class Dec1(ITestOutputHelper output)
 {
     [Fact]
