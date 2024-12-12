@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.ComponentModel;
+using Xunit.Abstractions;
 
 namespace AdventOfCode_2024.Days;
 
@@ -16,6 +17,37 @@ public class Dec6(ITestOutputHelper output)
         output.WriteLine($"{visited}");
     }
 
+    [Fact]
+    public void Calculate2()
+    {
+        var data = GetData();
+
+
+        // Brute force. There might be a better way
+        var loopCount = 0;
+        for (int y = 0; y < data.Count; y++)
+        {
+            var line = data[y];
+            for (int x = 0; x < data[0].Length; x++)
+            {
+                if (line[x] == Tile.Open)
+                {
+                    line[x] = Tile.Barrier;
+                    var board = new Board(data);
+                    board.Process();
+                    if(board.IsInLoop)
+                    {
+                        loopCount++;
+                    }
+
+                    line[x] = Tile.Open;
+                }
+            }
+        }
+
+        output.WriteLine($"{loopCount}");
+    }
+
     private static List<char[]> GetData()
     {
         var lines = File.ReadLines("./input/Dec6.txt");
@@ -28,6 +60,8 @@ public class Dec6(ITestOutputHelper output)
         private Guard _guard;
         private int _maxX;
         private int _maxY;
+
+        public bool IsInLoop { get; private set; }
 
         public Board(List<char[]> data)
         {
@@ -53,7 +87,6 @@ public class Dec6(ITestOutputHelper output)
         public void Process()
         {
             // Mark first tile as visited
-
             var startTile = GetTile(_guard.Location.X, _guard.Location.Y);
             startTile?.Visit(_guard);
 
@@ -64,6 +97,12 @@ public class Dec6(ITestOutputHelper output)
                     _guard.Location.Y + _guard.Direction.Y);
 
                 _guard.Move(nextTile);
+
+                if (nextTile?.IsInLoop() ?? false)
+                {
+                    IsInLoop = true;
+                    break;
+                }
             }
         }
 
@@ -107,6 +146,11 @@ public class Dec6(ITestOutputHelper output)
             {
                 _visits[guard.Direction] = 1;
             }
+        }
+
+        public bool IsInLoop()
+        {
+            return _visits.Any(x => x.Value > 1);
         }
     }
 
