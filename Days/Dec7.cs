@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Security.Cryptography.X509Certificates;
 using Xunit.Abstractions;
 
 namespace AdventOfCode_2024.Days;
@@ -14,7 +13,7 @@ public class Dec7(ITestOutputHelper output)
         var total = 0L;
         foreach(var item in data)
         {
-            var results = Calc(item.Numbers);
+            var results = Calc(item.Numbers, false);
             if(results.Any(x => x == item.Total))
             {
                 total += item.Total;
@@ -23,19 +22,35 @@ public class Dec7(ITestOutputHelper output)
         output.WriteLine($"{total}");
     }
 
-    public long[] Calc(long[] numbers)
+    [Fact]
+    public void Calculate2()
+    {
+        var data = GetData();
+
+        var total = 0L;
+        foreach(var item in data)
+        {
+            var results = Calc(item.Numbers, true);
+            if(results.Any(x => x == item.Total))
+            {
+                total += item.Total;
+            }
+        }
+        output.WriteLine($"{total}");
+    }
+
+    public long[] Calc(long[] numbers, bool includeConcat)
     {
         if (numbers.Length == 1)
             return numbers;
 
-        var sub = Calc(numbers[..^1]);
+        var sub = Calc(numbers[..^1], includeConcat);
         var multiply = sub.Select(x => numbers[^1] * x).ToArray();
         var addition = sub.Select(x => numbers[^1] + x).ToArray();
+        var concat = includeConcat ? sub.Select(x => long.Parse($"{x}{numbers[^1]}")).ToArray() : [];
 
-        return [..multiply, ..addition];
+        return [..multiply, ..addition, ..concat];
     }
-
-
 
     private Equation[] GetData()
     {
