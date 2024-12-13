@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 
 namespace AdventOfCode_2024.Days;
 
@@ -22,8 +21,7 @@ public class Dec6(ITestOutputHelper output)
     {
         var data = GetData();
 
-
-        // Brute force. There might be a better way
+        // Brute force. There must be a better way, but...
         var loopCount = 0;
         for (int y = 0; y < data.Count; y++)
         {
@@ -35,7 +33,7 @@ public class Dec6(ITestOutputHelper output)
                     line[x] = Tile.Barrier;
                     var board = new Board(data);
                     board.Process();
-                    if(board.IsInLoop)
+                    if (board.IsInLoop)
                     {
                         loopCount++;
                     }
