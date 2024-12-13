@@ -48,9 +48,9 @@ public class Dec8(ITestOutputHelper output)
                 for (int t2 = t1 + 1; t2 < group.Length; t2++)
                 {
                     var tile = group[t1];
-                    tile.IsAntinode();
+                    tile.MarkAsAntinode();
                     var otherTile = group[t2];
-                    otherTile.IsAntinode();
+                    otherTile.MarkAsAntinode();
 
                     var distance = tile.Location.GetDistance(otherTile.Location);
 
