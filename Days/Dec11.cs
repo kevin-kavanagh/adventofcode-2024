@@ -1,4 +1,7 @@
-﻿using Xunit.Abstractions;
+﻿using System;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.AccessControl;
+using Xunit.Abstractions;
 
 namespace AdventOfCode_2024.Days;
 
@@ -7,27 +10,57 @@ public class Dec11(ITestOutputHelper output)
     [Fact]
     public void Calculate1()
     {
-        var stones = GetData();
+        var stones = GetData().Select(x => x.Num);
 
-        for (int i = 0; i < 25; i++)
-        {
-            stones = stones.SelectMany(x => x.Blink()).ToArray();
-        }
+        var count = stones.Sum(x => Blink(x, 25));
 
-        output.WriteLine($"{stones.Length}");
+        output.WriteLine($"{count}");
     }
 
     [Fact]
     public void Calculate2()
     {
-        var stones = GetData();
+        var stones = GetData().Select(x => x.Num);
 
-        for (int i = 0; i < 75; i++)
+        var count = stones.Sum(x => Blink(x, 75));
+
+        output.WriteLine($"{count}");
+    }
+
+    private int Blink(long stone, int blinks)
+    {
+        var nextBlinks = blinks - 1;
+        if (blinks == 0)
         {
-            stones = stones.SelectMany(x => x.Blink()).ToArray();
+            return 1;
         }
 
-        output.WriteLine($"{stones.Length}");
+        if (stone == 0)
+        {
+            return Blink(1, nextBlinks);
+        }
+
+        var digits = Digits(stone);
+        if (digits % 2 == 0)
+        {
+            var m = Convert.ToInt64(Math.Pow(10, digits / 2));
+            var left = stone / m;
+            var right = stone % m;
+            return Blink(left, nextBlinks) + Blink(right, nextBlinks);
+        }
+
+        return Blink(stone * 2024, nextBlinks);
+    }
+
+    private static int Digits(long number)
+    {
+        int count = 0;
+        while (number > 0)
+        {
+            number /= 10;
+            count++;
+        }
+        return count;
     }
 
     private Stone[] GetData()
