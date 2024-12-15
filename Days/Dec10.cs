@@ -15,14 +15,30 @@ public class Dec10(ITestOutputHelper output)
         var paths = 0;
         foreach (var tile in data.Where(x => x.Height == 0))
         {
-            var finalTiles = GetPaths(tile, locations);
+            var finalTiles = GetDestinations(tile, locations);
             paths += finalTiles.Distinct().Count();
         }
 
         output.WriteLine($"{paths}");
     }
 
-    private Tile[] GetPaths(Tile tile, Dictionary<Location, Tile> locations)
+    [Fact]
+    public void Calculate2()
+    {
+        var data = GetData();
+        var locations = data.ToDictionary(x => x.Location);
+
+        var paths = 0;
+        foreach (var tile in data.Where(x => x.Height == 0))
+        {
+            var finalTiles = GetDestinations(tile, locations);
+            paths += finalTiles.Length;
+        }
+
+        output.WriteLine($"{paths}");
+    }
+
+    private Tile[] GetDestinations(Tile tile, Dictionary<Location, Tile> locations)
     {
         if (tile.Height == 9)
         {
@@ -35,7 +51,7 @@ public class Dec10(ITestOutputHelper output)
             var nexTile = Get(direction, tile, locations);
             if (nexTile?.Height == tile.Height + 1)
             {
-                finalTiles.AddRange(GetPaths(nexTile, locations));
+                finalTiles.AddRange(GetDestinations(nexTile, locations));
             }
         }
 
