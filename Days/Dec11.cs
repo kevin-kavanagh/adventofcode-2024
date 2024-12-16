@@ -31,7 +31,6 @@ public class Dec11(ITestOutputHelper output)
         var key = new Key(stone, blinks);
         return GetOrCreate(key, cache, () =>
         {
-
             var nextBlinks = blinks - 1;
             if (blinks == 0)
             {
