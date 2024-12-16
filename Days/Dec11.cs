@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.AccessControl;
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 
 namespace AdventOfCode_2024.Days;
 
@@ -10,9 +7,10 @@ public class Dec11(ITestOutputHelper output)
     [Fact]
     public void Calculate1()
     {
-        var stones = GetData().Select(x => x.Num);
+        var stones = GetData();
 
-        var count = stones.Sum(x => Blink(x, 25));
+        var cache = new Cache();
+        var count = stones.Sum(x => Blink(x, 25, cache));
 
         output.WriteLine($"{count}");
     }
@@ -20,36 +18,54 @@ public class Dec11(ITestOutputHelper output)
     [Fact]
     public void Calculate2()
     {
-        var stones = GetData().Select(x => x.Num);
+        var stones = GetData();
 
-        var count = stones.Sum(x => Blink(x, 75));
+        var cache = new Cache();
+        var count = stones.Sum(x => Blink(x, 75, cache));
 
         output.WriteLine($"{count}");
     }
 
-    private int Blink(long stone, int blinks)
+    private long Blink(long stone, int blinks, Cache cache)
     {
-        var nextBlinks = blinks - 1;
-        if (blinks == 0)
+        var key = new Key(stone, blinks);
+        return GetOrCreate(key, cache, () =>
         {
-            return 1;
-        }
 
-        if (stone == 0)
+            var nextBlinks = blinks - 1;
+            if (blinks == 0)
+            {
+                return 1;
+            }
+
+            if (stone == 0)
+            {
+                return Blink(1, nextBlinks, cache);
+            }
+
+
+            var digits = Digits(stone);
+            if (digits % 2 == 0)
+            {
+                var m = Convert.ToInt64(Math.Pow(10, digits / 2));
+                var left = stone / m;
+                var right = stone % m;
+                return Blink(left, nextBlinks, cache) + Blink(right, nextBlinks, cache);
+            }
+
+            return Blink(stone * 2024, nextBlinks, cache);
+        });
+    }
+
+    private static long GetOrCreate(Key key, Cache cache, Func<long> getter)
+    {
+        if (cache.Data.TryGetValue(key, out var val))
         {
-            return Blink(1, nextBlinks);
+            return val;
         }
-
-        var digits = Digits(stone);
-        if (digits % 2 == 0)
-        {
-            var m = Convert.ToInt64(Math.Pow(10, digits / 2));
-            var left = stone / m;
-            var right = stone % m;
-            return Blink(left, nextBlinks) + Blink(right, nextBlinks);
-        }
-
-        return Blink(stone * 2024, nextBlinks);
+        var newVal = getter();
+        cache.Data.Add(key, newVal);
+        return newVal;
     }
 
     private static int Digits(long number)
@@ -63,30 +79,15 @@ public class Dec11(ITestOutputHelper output)
         return count;
     }
 
-    private Stone[] GetData()
+    private long[] GetData()
     {
         var nums = File.ReadAllText("./input/Dec11.txt");
-        return nums.Split(" ").Select(x => new Stone(int.Parse(x))).ToArray();
+        return nums.Split(" ").Select(long.Parse).ToArray();
     }
 
-    private record struct Stone(long Num)
+    public record Key(long Num, int Blinks);
+    public class Cache
     {
-        public Stone[] Blink()
-        {
-            if (Num == 0)
-                return [new Stone(1)];
-
-            var num = Num.ToString();
-            if (num.Length % 2 == 0)
-            {
-                return
-                [
-                    new Stone(long.Parse(num[0 .. (num.Length / 2)])),
-                    new Stone(long.Parse(num[(num.Length / 2) ..])),
-                ];
-            }
-
-            return [new Stone(Num * 2024)];
-        }
+        public Dictionary<Key, long> Data { get; } = new Dictionary<Key, long>();
     }
 }
