@@ -18,7 +18,7 @@ public class Dec12(ITestOutputHelper output)
             if (!plot.IsInGroup)
             {
                 var result = Group(plot, garden);
-                var price = result.Area * result.Perimeter;
+                var price = result.Plots.Length * result.Perimeter;
                 total += price;
             }
         }
@@ -26,10 +26,60 @@ public class Dec12(ITestOutputHelper output)
         output.WriteLine($"{total}");
     }
 
-    private (int Area, int Perimeter) Group(Plot plot, Garden garden)
+    [Fact]
+    public void Calculate2()
     {
+        var data = GetData();
+        var garden = new Garden(data);
+
+        var total = 0;
+        foreach (var plot in garden.Plots)
+        {
+            if (!plot.IsInGroup)
+            {
+                var result = Group(plot, garden);
+                var corners = result.Plots.SelectMany(x => x.GetCorners());
+
+                // Counting the corners is the same as counting the sides, but we only care
+                // about corners where 1 or 3 plots return the corner. 2 is a straight line,
+                // 4 is enclosed.
+                var sides = corners.GroupBy(x => x).Sum(x =>
+                {
+                    var count = x.Count();
+                    if (count is 1 or 3)
+                        return 1;
+
+                    if(count == 2)
+                    {
+                        // Diagonals are a special case
+                        var corner = x.Key;
+                        var plotLookup = result.Plots.ToDictionary(x => x.Location);
+                        if(plotLookup.ContainsKey(new Location(corner.X, corner.Y)) &&
+                            plotLookup.ContainsKey(new Location(corner.X - 1, corner.Y - 1)))
+                        {
+                            return 2;
+                        }
+                        if(plotLookup.ContainsKey(new Location(corner.X - 1, corner.Y)) &&
+                            plotLookup.ContainsKey(new Location(corner.X, corner.Y - 1)))
+                        {
+                            return 2;
+                        }
+                    }
+
+                    return 0;
+                });
+
+                total += result.Plots.Length * sides;
+            }
+        }
+
+        output.WriteLine($"{total}");
+    }
+
+    private (int Perimeter, Plot[] Plots) Group(Plot plot, Garden garden)
+    {
+        var plots = new List<Plot> { plot };
         plot.IsInGroup = true;
-        var area = 1;
         var perimeter = 0;
         foreach (var direction in Directions)
         {
@@ -41,12 +91,12 @@ public class Dec12(ITestOutputHelper output)
             else if (!neighbour.IsInGroup)
             {
                 var res = Group(neighbour, garden);
-                area += res.Area;
                 perimeter += res.Perimeter;
+                plots.AddRange(res.Plots);
             }
         }
 
-        return (area, perimeter);
+        return (perimeter, plots.ToArray());
     }
 
     private Plot[] GetData()
@@ -66,10 +116,23 @@ public class Dec12(ITestOutputHelper output)
     }
 
     private record Location(int X, int Y);
+
     private record Plot(Location Location, char Type)
     {
         public bool IsInGroup { get; set; }
+
+        public Location[] GetCorners()
+        {
+            return
+                [
+                new Location(Location.X, Location.Y),
+                new Location(Location.X + 1, Location.Y),
+                new Location(Location.X + 1, Location.Y + 1),
+                new Location(Location.X, Location.Y + 1),
+                ];
+        }
     }
+
     private record Garden
     {
         private Dictionary<Location, Plot> _plots;
