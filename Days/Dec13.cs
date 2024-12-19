@@ -61,10 +61,10 @@ public class Dec13(ITestOutputHelper output)
 
             var currentX = xIncs.InitialInc;
             var currentY = yIncs.InitialInc;
-            var lcm = GetLowestCommonMultiple(xIncs.FurtherInc, yIncs.FurtherInc);
-            while(currentX < xIncs.InitialInc + lcm)
+            var lcm = GetLowestCommonMultiple(xIncs.FurtherInc, yIncs.FurtherInc) * 2;
+            while (currentX < xIncs.InitialInc + lcm)
             {
-                if(currentX == currentY)
+                if (currentX == currentY)
                 {
                     var a = currentX;
                     var b = (newPrize.X - (currentX * machine.A.X)) / machine.B.X;
@@ -72,7 +72,7 @@ public class Dec13(ITestOutputHelper output)
                     break;
                 }
 
-                if(currentX > currentY)
+                if (currentX > currentY)
                 {
                     currentY += yIncs.FurtherInc;
                 }
