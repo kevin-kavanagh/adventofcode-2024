@@ -54,71 +54,22 @@ public class Dec13(ITestOutputHelper output)
         {
             var newPrize = machine.Prize with { X = machine.Prize.X + Extra, Y = machine.Prize.Y + Extra };
 
-            var xIncs = GetIncs(newPrize.X, machine.A.X, machine.B.X);
-            var yIncs = GetIncs(newPrize.Y, machine.A.Y, machine.B.Y);
-            if (!xIncs.Found || !yIncs.Found)
-                continue;
-
-            var currentX = xIncs.InitialInc;
-            var currentY = yIncs.InitialInc;
-            var lcm = GetLowestCommonMultiple(xIncs.FurtherInc, yIncs.FurtherInc) * 2;
-            while (currentX < xIncs.InitialInc + lcm)
+            for (int b = 0; b < 1000; b++)
             {
-                if (currentX == currentY)
+                //var aPressed = (machine.Prize.X -
+                //    (machine.B.X * (machine.Prize.Y - machine.A.Y) * i / machine.B.Y)) / (decimal)machine.A.X;
+
+                var a = (machine.Prize.Y - (machine.B.Y * b)) / machine.A.Y;
+
+                if ((a * machine.A.X) + (b * machine.B.X) == machine.Prize.X)
                 {
-                    var a = currentX;
-                    var b = (newPrize.X - (currentX * machine.A.X)) / machine.B.X;
                     total += (a * 3) + b;
-                    break;
                 }
 
-                if (currentX > currentY)
-                {
-                    currentY += yIncs.FurtherInc;
-                }
-                else
-                {
-                    currentX += xIncs.FurtherInc;
-                }
             }
         }
 
         output.WriteLine($"{total}");
-    }
-
-    private (bool Found, long InitialInc, long FurtherInc) GetIncs(long total, long num1, long num2)
-    {
-        var lcm = GetLowestCommonMultiple(num1, num2);
-        var val = 0L;
-        var inc = 0;
-        while (val < lcm)
-        {
-            if ((total - val) % num2 == 0)
-            {
-                return (true, inc, lcm / num1);
-            }
-            val += num1;
-            inc++;
-        }
-
-        return (false, 0, 0);
-    }
-
-    private long GetLowestCommonMultiple(long num, long othernum)
-    {
-        int i = 1;
-        while (true)
-        {
-            if (num * i % othernum == 0)
-            {
-                return num * i;
-            }
-            if (othernum * i % num == 0)
-            {
-                return othernum * i;
-            }
-            i++;
-        }
     }
 
     private Machine[] GetData()
@@ -139,8 +90,6 @@ public class Dec13(ITestOutputHelper output)
 
         return machines.ToArray();
     }
-
-    private record XnYCount(int Count, long X, long Y);
 
     private record XnY(long X, long Y);
 
