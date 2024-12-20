@@ -19,15 +19,31 @@ public class Dec14(ITestOutputHelper output)
         var locations = new List<Tile>();
         foreach (var robot in robots)
         {
-            var x = (robot.X + (iterations * robot.Vx)) % maxX;
-            var y = (robot.Y + (iterations * robot.Vy)) % maxY;
+            var mx = iterations * robot.Vx;
+            var x = mx > robot.X ? (robot.X + mx) % maxX : (maxX - Math.Abs((robot.X + mx) % maxX)) % maxX;
+
+            var my = iterations * robot.Vy;
+            var y = my > robot.Y ? (robot.Y + my) % maxY : (maxY - Math.Abs((robot.Y + my) % maxY)) % maxY;
+
             locations.Add(new Tile(x, y));
         }
 
-        var ignoreX = (maxX / 2) + 1;
-        var ignoreY = (maxY / 2) + 1;
+        for (int y = 0; y < maxY; y++)
+        {
+            var lu = locations.Where(l => l.Y == y).ToLookup(l => l.X);
+            output.WriteLine(string.Join("", Enumerable.Range(0, maxX).Select(i => lu[i].Count().ToString())));
+        }
 
-        var total = locations.Where(x => x.X != ignoreX && x.Y != ignoreY).Sum(x => 1);
+
+
+        var ignoreX = maxX / 2;
+        var ignoreY = maxY / 2;
+
+        var q1 = locations.Where(x => x.X < ignoreX && x.Y < ignoreY).Count();
+        var q2 = locations.Where(x => x.X > ignoreX && x.Y < ignoreY).Count();
+        var q3 = locations.Where(x => x.X > ignoreX && x.Y > ignoreY).Count();
+        var q4 = locations.Where(x => x.X < ignoreX && x.Y > ignoreY).Count();
+        var total = q1 * q2 * q3 * q4;
 
         output.WriteLine($"{total}");
     }
