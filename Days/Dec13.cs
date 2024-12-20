@@ -56,25 +56,28 @@ public class Dec13(ITestOutputHelper output)
             //var newPrize = machine.Prize;
 
             var diff = decimal.MaxValue;
-            for (long b = 0; b < Extra; b++)
+            for (long a = 0; a < Extra; a++)
             {
-                var a = (newPrize.Y - (machine.B.Y * b)) / (decimal)machine.A.Y;
-                var test = (newPrize.X - (machine.A.X * a)) / machine.B.X;
+                var b = (newPrize.X - (machine.A.X * a)) / (decimal)machine.B.X;
+                var test = (newPrize.Y - (machine.B.Y * b)) / machine.A.Y;
 
-                if (test == b)
+                if (test == a)
                 {
                     if ((machine.A.Y * a) + (machine.B.Y * b) == newPrize.Y)
                     {
-                        total += Convert.ToInt64(a * 3) + b;
+                        total += (a * 3) + Convert.ToInt64(b);
                         break;
                     }
                 }
 
-                var newdiff = Math.Abs(test - b);
-                if (b == 1)
+                var newdiff = Math.Abs(test - a);
+                if (a == 1)
                 {
                     var bump = Convert.ToInt64(newdiff / (diff - newdiff));
-                    b += bump - 1;
+                    a += bump - 1;
+                    newdiff = Math.Abs(test - a);
+
+                    continue;
                 }
 
                 if (newdiff > diff)
