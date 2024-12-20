@@ -9,7 +9,7 @@ public class Dec13(ITestOutputHelper output)
     private static readonly Regex MatchButtonB = new Regex("Button B: X\\+(\\d+), Y\\+(\\d+)");
     private static readonly Regex MatchPrize = new Regex("Prize: X=(\\d+), Y=(\\d+)");
 
-    private const long Extra = 10_000_000_000_000;
+    private const long Extra = 10000000000000;
 
     [Fact]
     public void Calculate1()
@@ -53,41 +53,19 @@ public class Dec13(ITestOutputHelper output)
         foreach (var machine in machines)
         {
             var newPrize = machine.Prize with { X = machine.Prize.X + Extra, Y = machine.Prize.Y + Extra };
-            //var newPrize = machine.Prize;
 
-            var diff = decimal.MaxValue;
-            for (long a = 0; a < Extra; a++)
+            var a = ((newPrize.X * machine.B.Y) - (newPrize.Y * machine.B.X)) /
+                ((machine.A.X * machine.B.Y) - (machine.A.Y * machine.B.X));
+
+            var b = ((machine.A.X * newPrize.Y) - (machine.A.Y * newPrize.X)) /
+                ((machine.A.X * machine.B.Y) - (machine.A.Y * machine.B.X));
+
+            if ((machine.A.Y * a) + (machine.B.Y * b) == newPrize.Y &&
+                (machine.A.X * a) + (machine.B.X * b) == newPrize.X)
             {
-                var b = (newPrize.X - (machine.A.X * a)) / (decimal)machine.B.X;
-                var test = (newPrize.Y - (machine.B.Y * b)) / machine.A.Y;
-
-                if (test == a)
-                {
-                    if ((machine.A.Y * a) + (machine.B.Y * b) == newPrize.Y)
-                    {
-                        total += (a * 3) + Convert.ToInt64(b);
-                        break;
-                    }
-                }
-
-                var newdiff = Math.Abs(test - a);
-                if (a == 1)
-                {
-                    var bump = Convert.ToInt64(newdiff / (diff - newdiff));
-                    a += bump - 1;
-                    newdiff = Math.Abs(test - a);
-
-                    continue;
-                }
-
-                if (newdiff > diff)
-                {
-                    break;
-                }
-                diff = newdiff;
+                total += (a * 3) + Convert.ToInt64(b);
             }
         }
-
         output.WriteLine($"{total}");
     }
 
