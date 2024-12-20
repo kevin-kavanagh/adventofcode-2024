@@ -53,19 +53,35 @@ public class Dec13(ITestOutputHelper output)
         foreach (var machine in machines)
         {
             var newPrize = machine.Prize with { X = machine.Prize.X + Extra, Y = machine.Prize.Y + Extra };
+            //var newPrize = machine.Prize;
 
-            for (int b = 0; b < 1000; b++)
+            var diff = decimal.MaxValue;
+            for (long b = 0; b < Extra; b++)
             {
-                //var aPressed = (machine.Prize.X -
-                //    (machine.B.X * (machine.Prize.Y - machine.A.Y) * i / machine.B.Y)) / (decimal)machine.A.X;
+                var a = (newPrize.Y - (machine.B.Y * b)) / (decimal)machine.A.Y;
+                var test = (newPrize.X - (machine.A.X * a)) / machine.B.X;
 
-                var a = (machine.Prize.Y - (machine.B.Y * b)) / machine.A.Y;
-
-                if ((a * machine.A.X) + (b * machine.B.X) == machine.Prize.X)
+                if (test == b)
                 {
-                    total += (a * 3) + b;
+                    if ((machine.A.Y * a) + (machine.B.Y * b) == newPrize.Y)
+                    {
+                        total += Convert.ToInt64(a * 3) + b;
+                        break;
+                    }
                 }
 
+                var newdiff = Math.Abs(test - b);
+                if (b == 1)
+                {
+                    var bump = Convert.ToInt64(newdiff / (diff - newdiff));
+                    b += bump - 1;
+                }
+
+                if (newdiff > diff)
+                {
+                    break;
+                }
+                diff = newdiff;
             }
         }
 
